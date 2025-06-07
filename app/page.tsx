@@ -81,7 +81,7 @@ export default function VillageSongGenerator() {
 
 
 
-     /*
+    
     try {
       // 模拟真实API调用（实际替换为SunoAI等音乐生成API）
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -98,7 +98,7 @@ export default function VillageSongGenerator() {
     } finally {
       setIsGeneratingMusic(false);
     }
-      **/
+     
   };
     
   // 复制歌词到剪贴板
