@@ -74,14 +74,54 @@ export default function VillageSongGenerator() {
     setIsGeneratingMusic(true);
 
 
+    setMusicUrl(null);
+    try{
+      const requestBody={
+        prompt:musicPrompt.substring(0,400),
+        customMode:false,
+        instrumental:false,
+        model:"V4",
+        callBackUrl:"",//填写实际回调地址，准备用route.js做一个简单后端来回调
+        style:"",
+        negtiveTags:""
+      };
 
+      const response=await fetch('https://apibox.erweima.ai/api/v1/generate',{//原先的调用地址不对
+        method:'POST',
+        headers:{
+          'Content-Type':'application/json',
+          'Authorization':`Bearer ${process.env.NEXT_PUBLIC_SUNO_API_KEY}`
+        },
+        body:JSON.stringify(requestBody)
+      });
+
+      if(!response.ok){
+        const errorData=await response.json();
+        throw new Error(errorData.message || '音乐生成出错');
+      }
+
+      const result=await response.json();
+      //在此假设返回的音频RUL字段为audio——url
+      if (result.audio_url){
+        setMusicUrl(result.audio_url);
+        //自动播放音乐
+        setTimeout(()=>audioRef.current?.play(),500);
+      }else{
+        throw new Error('没有有效音频URL');
+      }
+    }catch(error){
+      console.error("音乐生成失败:",error);
+      alert(`音乐生成失败:${error instanceof Error ? error.message:'未知错误'}`);
+    }finally{
+      setIsGeneratingMusic(false);
+    }
       
 
 
 
 
 
-    
+    /*
     try {
       // 模拟真实API调用（实际替换为SunoAI等音乐生成API）
       await new Promise(resolve => setTimeout(resolve, 3000));
@@ -98,7 +138,7 @@ export default function VillageSongGenerator() {
     } finally {
       setIsGeneratingMusic(false);
     }
-     
+     **/
   };
     
   // 复制歌词到剪贴板
