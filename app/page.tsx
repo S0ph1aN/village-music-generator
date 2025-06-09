@@ -1,6 +1,6 @@
 // app/page.tsx
 'use client';
-import { useState, useRef } from 'react';
+import { useState, useRef,useEffect} from 'react';
 
 export default function VillageSongGenerator() {
   // ========== 状态管理 ==========
@@ -13,7 +13,22 @@ export default function VillageSongGenerator() {
   const [musicPrompt, setMusicPrompt] = useState(''); // 新增：独立音乐输入
   const [musicUrl, setMusicUrl] = useState<string | null>(null);
   const [isGeneratingMusic, setIsGeneratingMusic] = useState(false); // 新增：独立音乐生成状态
-  
+
+  //新增轮询定义
+  const [pollCount,setPollCount]=useState(0);
+  const [maxPolls,setMaxPolls]=useState(18);
+  const pollTimeoutRef=useRef<NodeJS.Timeout | null>(null);
+
+  //新增组件卸载时清除定时器
+  useEffect(()=>{
+    return()=>{
+      if(pollTimeoutRef.current){
+        clearTimeout(pollTimeoutRef.current);
+      }
+    };
+  },[]);
+
+
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // ========== 核心功能函数 ==========
@@ -64,6 +79,56 @@ export default function VillageSongGenerator() {
     }
   };
 
+  /*
+  轮询音乐生成状态
+  **/
+    const pollForMusic = async (taskId: string): Promise<string> => {
+    const POLL_INTERVAL = 5000; // 5秒轮询一次
+    
+    try {
+      const statusRes = await fetch(`https://apibox.erweima.ai/api/v1/status/${taskId}`, {
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUNO_API_KEY}`
+        }
+      });
+      
+      // 更新轮询次数
+      setPollCount(prev => prev + 1);
+      
+      if (!statusRes.ok) {
+        const errorData = await statusRes.json();
+        throw new Error(errorData.message || '状态检查出错');
+      }
+      
+      const statusData = await statusRes.json();
+      
+      // 检查任务完成状态
+      if (statusData.status === 'complete' && statusData.data?.[0]?.audio_url) {
+        return statusData.data[0].audio_url;
+      }
+      
+      // 继续轮询 - 返回一个明确的 Promise
+      return new Promise<string>((resolve, reject) => {
+        pollTimeoutRef.current = setTimeout(async () => {
+          try {
+            const result = await pollForMusic(taskId);
+            resolve(result);
+          } catch (error) {
+            reject(error);
+          }
+        }, POLL_INTERVAL);
+      });
+      
+    } catch (error) {
+      console.error("轮询出错:", error);
+      throw error;
+    }
+  };
+
+  /**
+   * 生成音乐（独立功能，不依赖歌词）
+   * 根据任意文本输入生成音乐
+   */
   /**
    * 生成音乐（独立功能，不依赖歌词）
    * 根据任意文本输入生成音乐
@@ -72,51 +137,64 @@ export default function VillageSongGenerator() {
     if (!musicPrompt.trim()) return;
     
     setIsGeneratingMusic(true);
-
-
     setMusicUrl(null);
-    try{
-      const requestBody={
-        prompt:musicPrompt.substring(0,400),
-        customMode:false,
-        instrumental:false,
-        model:"V4",
-        callBackUrl:"",//填写实际回调地址，准备用route.js做一个简单后端来回调
-        style:"",
-        negtiveTags:""
+    setPollCount(0); // 重置轮询计数器
+
+    try {
+      const requestBody = {
+        prompt: musicPrompt.substring(0, 400),
+        customMode: false,
+        instrumental: false,
+        model: "V4",
+        callBackUrl: "", // 留空启用轮询模式
+        style: "",
+        title: "",
+        negativeTags: ""
       };
-
-      const response=await fetch('https://apibox.erweima.ai/api/v1/generate',{//原先的调用地址不对
-        method:'POST',
-        headers:{
-          'Content-Type':'application/json',
-          'Authorization':`Bearer ${process.env.NEXT_PUBLIC_SUNO_API_KEY}`
+      
+      const response = await fetch('https://apibox.erweima.ai/api/v1/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_SUNO_API_KEY}`
         },
-        body:JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody)
       });
-
-      if(!response.ok){
-        const errorData=await response.json();
+      
+      if (!response.ok) {
+        const errorData = await response.json();
         throw new Error(errorData.message || '音乐生成出错');
       }
-
-      const result=await response.json();
-      //在此假设返回的音频RUL字段为audio——url
-      if (result.audio_url){
-        setMusicUrl(result.audio_url);
-        //自动播放音乐
-        setTimeout(()=>audioRef.current?.play(),500);
-      }else{
+      
+      const result = await response.json();
+      // 生成任务ID解析
+      const taskId = result.task_id || result.id; // 不同API可能使用不同字段名
+      
+      if (!taskId) {
+        throw new Error('未接收到有效任务ID');
+      }
+      // 开始轮询获取音频URL
+      const audioUrl = await pollForMusic(taskId);
+      
+      // 设置并播放音乐
+      if (audioUrl) {
+        setMusicUrl(audioUrl);
+        setTimeout(() => {
+          if (audioRef.current) {
+            audioRef.current.play().catch(e => console.error("播放失败:", e));
+          }
+        }, 500);
+      } else {
         throw new Error('没有有效音频URL');
       }
-    }catch(error){
-      console.error("音乐生成失败:",error);
-      alert(`音乐生成失败:${error instanceof Error ? error.message:'未知错误'}`);
-    }finally{
+    } catch (error) {
+      console.error("音乐生成失败:", error);
+      alert(`音乐生成失败:${error instanceof Error ? error.message : '未知错误'}`);
+    } finally {
       setIsGeneratingMusic(false);
     }
-      
-
+  };
+  
 
 
 
@@ -139,8 +217,8 @@ export default function VillageSongGenerator() {
       setIsGeneratingMusic(false);
     }
      **/
-  };
     
+
   // 复制歌词到剪贴板
   const copyLyrics = () => {
     if (songData?.lyrics) {
@@ -168,7 +246,7 @@ export default function VillageSongGenerator() {
               <textarea
                 value={villagePrompt}
                 onChange={(e) => setVillagePrompt(e.target.value)}
-                placeholder="描述乡村场景（如：江南水乡的清晨炊烟...）"
+                placeholder="描述乡村场景（如：江南水乡的清晨炊烟...）"//需要加入提示词提示用户
                 className="flex-1 px-4 h-32 border border-green-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                 disabled={isGeneratingLyrics || isGeneratingMusic}
               />
