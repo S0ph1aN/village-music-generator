@@ -129,10 +129,6 @@ export default function VillageSongGenerator() {
    * 生成音乐（独立功能，不依赖歌词）
    * 根据任意文本输入生成音乐
    */
-  /**
-   * 生成音乐（独立功能，不依赖歌词）
-   * 根据任意文本输入生成音乐
-   */
   const generateMusic = async () => {
     if (!musicPrompt.trim()) return;
     
