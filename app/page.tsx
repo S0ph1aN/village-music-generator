@@ -138,7 +138,7 @@ export default function VillageSongGenerator() {
 
     try {
       //获取当前域名用于回调url
-      const baseUrl=window.location.origin;
+      //const baseUrl=window.location.origin;baseURL已经不需要了0611晚
       const callBackUrl=`http://47.120.72.4/api/generate-music`;//0611晚替换为阿里云服务器的公网IP
 
       const requestBody = {
