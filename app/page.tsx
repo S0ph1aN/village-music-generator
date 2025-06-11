@@ -328,10 +328,14 @@ export default function VillageSongGenerator() {
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-green-200">
           <h3 className="text-xl font-semibold text-green-700 mb-3">新功能说明</h3>
           <ol className="list-decimal pl-5 space-y-2 text-gray-600">
-            <li><strong>独立操作</strong>：歌词和音乐生成现在完全独立，可单独使用</li>
-            <li><strong>歌词生成</strong>：左侧输入乡村场景描述，获取AI创作的歌词</li>
-            <li><strong>音乐生成</strong>：右侧输入任意文本，直接生成音乐（无需先有歌词）</li>
-            <li><strong>风格控制</strong>：在音乐输入中可指定风格（如"欢快的民谣"）</li>
+            <li><strong>精准的提示词能更快让AI明白您的需求！</strong></li>
+            <li><strong>以下为参考</strong></li>
+            <li><strong>地理坐标</strong>：通过经纬度/地名构建空间记忆锚点</li>
+            <li><strong>地貌特征</strong>：具有标识性的自然元素，如某种地貌、晒谷场等</li>
+            <li><strong>人文地理</strong>：融合人类活动的地理印记</li>
+            <li><strong>气候韵律</strong>：将自然节律转化为节奏型</li>
+            <li><strong>风景蒙太奇</strong>:声音元素作拼贴以产生别样效果</li>
+            <li><strong>人文地理隐喻</strong>:符号化表达地理人文特征，做到简辞赋义</li>
           </ol>
         </div>
       </div>
