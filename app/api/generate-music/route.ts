@@ -1,4 +1,4 @@
-// app/api/webhook/route.ts
+// app/api/generate-music/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 
 // 简单内存存储（实际应用中应使用数据库）

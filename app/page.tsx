@@ -137,12 +137,16 @@ export default function VillageSongGenerator() {
     setPollCount(0); // 重置轮询计数器
 
     try {
+      //获取当前域名用于回调url
+      const baseUrl=window.location.origin;
+      const callBackUrl=`${baseUrl}/api/generate-music`;//实际的api路径
+
       const requestBody = {
         prompt: musicPrompt.substring(0, 400),
         customMode: false,
         instrumental: false,
         model: "V4",
-        callBackUrl: "", // 留空启用轮询模式
+        callBackUrl, //060921:17更改
         style: "",
         title: "",
         negativeTags: ""
@@ -163,10 +167,13 @@ export default function VillageSongGenerator() {
       }
       
       const result = await response.json();
+      console.log("音乐生成返回数据",result);//0611添加调试日志输出
       // 生成任务ID解析
-      const taskId = result.task_id || result.id; // 不同API可能使用不同字段名
-      
+      const taskId =  result?.data?.taskId;// 不同API可能使用不同字段名,故更改“result.task_id || result.id;”
+
       if (!taskId) {
+        //0610新增
+        console.error("完整返回结果:",result);//返回调试信息
         throw new Error('未接收到有效任务ID');
       }
       // 开始轮询获取音频URL
