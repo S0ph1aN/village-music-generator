@@ -140,7 +140,7 @@ export default function VillageSongGenerator() {
       //获取当前域名用于回调url
       //const baseUrl=window.location.origin;baseURL已经不需要了0611晚
       const callBackUrl=`http://47.120.72.4/api/generate-music`;//0611晚替换为阿里云服务器的公网IP
-
+      //Until0612I cant access my server.damn...
       const requestBody = {
         prompt: musicPrompt.substring(0, 400),
         customMode: false,
@@ -232,11 +232,11 @@ export default function VillageSongGenerator() {
 
   // ========== UI渲染 ==========
   return (
-    <div className="min-h-screen bg-gradient-to-b from-amber-800 to-amber-400 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-teal-800 to-cyan-300 p-6">
       <div className="max-w-3xl mx-auto">
         <header className="text-center py-8">
-          <h1 className="text-5xl font-bold text-emerald-300">文转音大模型</h1>
-          <p className="mt-4 text-1xl text-white">独立歌词生成与音乐生成功能</p>
+          <h1 className="text-5xl font-bold text-emerald-300">辞喻音声</h1>
+          <p className="mt-4 text-1xl text-white">智能歌词&音乐生成功能祝您平步青云！</p>
         </header>
 
         {/* 双栏布局容器 */}
@@ -326,10 +326,11 @@ export default function VillageSongGenerator() {
 
         {/* 使用说明 */}
         <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-green-200">
-          <h3 className="text-xl font-semibold text-green-700 mb-3">新功能说明</h3>
+          <h3 className="text-xl font-semibold text-green-700 mb-3">歌词生成引导：</h3>
+          <p className="mt-4 text-1xl text-black">精准的提示词能更快让AI明白您的需求！</p>
+          <p className="mt-1 text-1xl text-red-300">以下为参考</p>
+          <p className="mt-4 text-1xl text-black"></p>
           <ol className="list-decimal pl-5 space-y-2 text-gray-600">
-            <li><strong>精准的提示词能更快让AI明白您的需求！</strong></li>
-            <li><strong>以下为参考</strong></li>
             <li><strong>地理坐标</strong>：通过经纬度/地名构建空间记忆锚点</li>
             <li><strong>地貌特征</strong>：具有标识性的自然元素，如某种地貌、晒谷场等</li>
             <li><strong>人文地理</strong>：融合人类活动的地理印记</li>
